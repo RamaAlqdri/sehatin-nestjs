@@ -10,11 +10,13 @@ import { JwtLoginModule } from 'src/auth/jwt/module/jwt.module';
 import { JwtForgotModule } from 'src/auth/jwt/module/jwt-forgot.module';
 import { JwtLoginStrategy } from 'src/auth/jwt/strategies/jwt.strategy';
 import { JwtForgotStrategy } from 'src/auth/jwt/strategies/jwt-forgot.strategy';
+import { Schedule } from 'src/schedule/entity/schedule.entity';
+import { Message } from 'src/message/entity/message.entity';
 
 @Module({
   imports: [
     ConfigModule,
-    TypeOrmModule.forFeature([User, Otp]),
+    TypeOrmModule.forFeature([User, Otp, Schedule, Message]),
     MailerModule,
     JwtLoginModule,
     JwtForgotModule,

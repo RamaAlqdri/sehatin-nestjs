@@ -1,16 +1,26 @@
 import { Otp } from 'src/auth/entity/otp.user.entity';
-import { Column, Entity, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Message } from 'src/message/entity/message.entity';
+import { Schedule } from 'src/schedule/entity/schedule.entity';
+import {
+  Column,
+  Entity,
+  OneToMany,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 export enum Gender {
   MALE = 'male',
   FEMALE = 'female',
 }
+
 export enum Activity {
   SEDENTARY = 'male',
   LIGHT = 'female',
   MODERATELY = 'moderately',
   HEAVY = 'heavy',
 }
+
 export enum Goal {
   WEIGHT = 'weight',
   MUSCLE = 'muscle',
@@ -60,4 +70,10 @@ export class User {
 
   @Column({ type: 'enum', enum: Goal, nullable: true })
   goal: Goal;
+
+  @OneToMany(() => Schedule, (schedule) => schedule.user)
+  schedules: Schedule[];
+
+  @OneToMany(() => Message, (message) => message.user)
+  message: Message[];
 }

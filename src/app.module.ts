@@ -14,6 +14,9 @@ import * as path from 'path';
 import { User } from './user/entity/user.entity';
 import { Otp } from './auth/entity/otp.user.entity';
 import { Admin } from './admin/entity/admin.entity';
+import { Food } from './food/entity/food.entity';
+import { Schedule } from './schedule/entity/schedule.entity';
+import { Message } from './message/entity/message.entity';
 
 @Module({
   imports: [
@@ -30,7 +33,7 @@ import { Admin } from './admin/entity/admin.entity';
           username: configService.get<string>('DATABASE_USERNAME'),
           password: configService.get<string>('DATABASE_PASSWORD'),
           database: configService.get<string>('DATABASE_NAME'),
-          entities: [User, Otp, Admin],
+          entities: [User, Otp, Admin, Food, Schedule, Message],
           synchronize: true, // Sesuaikan dengan kebutuhan Anda
         };
       },
