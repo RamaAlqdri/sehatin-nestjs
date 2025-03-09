@@ -168,4 +168,66 @@ export class ScheduleService {
       throw new Error(error);
     }
   }
+
+  async getUserCaloriesConsumedForDay(
+    userId: string,
+    date: Date,
+  ): Promise<number> {
+    try {
+      const schedules = await this.getScheduleForUserByDay(userId, date);
+      const completedSchedules = schedules.filter(
+        (schedule) => schedule.is_completed,
+      );
+      const calories = completedSchedules.reduce((acc, schedule) => {
+        return acc + parseFloat(schedule.calories_burned as any);
+      }, 0);
+
+      // console.log('Calories:', calories);
+      return calories;
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+
+  async getUserWaterConsumedForDay(
+    userId: string,
+    date: Date,
+  ): Promise<number> {
+    try {
+      const schedules = await this.getScheduleForUserByDay(userId, date);
+      const completedSchedules = schedules.filter(
+        (schedule) => schedule.is_completed,
+      );
+      const water = completedSchedules.reduce((acc, schedule) => {
+        return acc + parseFloat(schedule.water_consum as any);
+      }, 0);
+
+      // console.log('Water:', water);
+      return water;
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+
+  async getUserCompletedSchedulePercentage(userId: string): Promise<number> {
+    try {
+      const schedules = await this.scheduleRepository.find({
+        where: { user: { id: userId } },
+      });
+
+      if (schedules.length === 0) {
+        return 0;
+      }
+
+      const completedSchedules = schedules.filter(
+        (schedule) => schedule.is_completed,
+      );
+      const percentage = (completedSchedules.length / schedules.length) * 100;
+
+      console.log('Completed Schedule Percentage:', percentage);
+      return percentage;
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
 }

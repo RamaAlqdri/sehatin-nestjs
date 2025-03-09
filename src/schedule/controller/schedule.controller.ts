@@ -118,6 +118,68 @@ export class ScheduleController {
     }
   }
 
+  @Get('calories/:userId')
+  @UseGuards(JwtLoginAuthGuard, RoleGuard)
+  @Roles('admin', 'user')
+  async getCaloriesSchedule(
+    @Param('userId') userId: string,
+    @Body() request: GetScheduleDto,
+  ): Promise<ResponseWrapper<any>> {
+    try {
+      const calories = await this.scheduleService.getUserCaloriesConsumedForDay(
+        userId,
+        request.date,
+      );
+      return new ResponseWrapper(HttpStatus.OK, 'Calories Fetched', calories);
+    } catch (error) {
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status,
+      );
+    }
+  }
+  @Get('water/:userId')
+  @UseGuards(JwtLoginAuthGuard, RoleGuard)
+  @Roles('admin', 'user')
+  async getWaterSchedule(
+    @Param('userId') userId: string,
+    @Body() request: GetScheduleDto,
+  ): Promise<ResponseWrapper<any>> {
+    try {
+      const calories = await this.scheduleService.getUserWaterConsumedForDay(
+        userId,
+        request.date,
+      );
+      return new ResponseWrapper(HttpStatus.OK, 'Water Fetched', calories);
+    } catch (error) {
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status,
+      );
+    }
+  }
+  @Get('progress/:userId')
+  @UseGuards(JwtLoginAuthGuard, RoleGuard)
+  @Roles('admin', 'user')
+  async getUserProgress(
+    @Param('userId') userId: string,
+  ): Promise<ResponseWrapper<any>> {
+    try {
+      const calories =
+        await this.scheduleService.getUserCompletedSchedulePercentage(userId);
+      return new ResponseWrapper(
+        HttpStatus.OK,
+        'Diet Progress Fetched',
+        calories,
+      );
+    } catch (error) {
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status,
+      );
+    }
+  }
+
   @Get('month/:userId')
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
   @Roles('admin', 'user')
