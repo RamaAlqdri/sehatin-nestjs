@@ -7,9 +7,6 @@ export class CreateFoodDto {
   @IsString()
   description: string;
 
-  @IsString()
-  ingredients: string;
-
   @IsNumber()
   fat: number;
 

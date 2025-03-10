@@ -9,10 +9,6 @@ export class UpdateFoodDto {
   @IsOptional()
   description: string;
 
-  @IsString()
-  @IsOptional()
-  ingredients: string;
-
   @IsNumber()
   @IsOptional()
   fat: number;
