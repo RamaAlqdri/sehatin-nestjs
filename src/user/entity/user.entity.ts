@@ -15,7 +15,7 @@ export enum Gender {
 }
 
 export enum Activity {
-  SEDENTARY = 'male',
+  SEDENTARY = 'sedentary',
   LIGHT = 'female',
   MODERATELY = 'moderately',
   HEAVY = 'heavy',

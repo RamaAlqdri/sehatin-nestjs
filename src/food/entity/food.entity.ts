@@ -10,6 +10,9 @@ export class Food {
   name: string;
 
   @Column()
+  ingredients: string;
+
+  @Column()
   description: string;
 
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
@@ -23,6 +26,9 @@ export class Food {
 
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
   carb: number;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+  fiber: number;
 
   @Column({ nullable: true })
   image: string;

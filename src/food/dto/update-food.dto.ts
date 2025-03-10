@@ -9,6 +9,10 @@ export class UpdateFoodDto {
   @IsOptional()
   description: string;
 
+  @IsString()
+  @IsOptional()
+  ingredients: string;
+
   @IsNumber()
   @IsOptional()
   fat: number;
@@ -24,4 +28,8 @@ export class UpdateFoodDto {
   @IsNumber()
   @IsOptional()
   protein: number;
+
+  @IsNumber()
+  @IsOptional()
+  fiber: number;
 }

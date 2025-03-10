@@ -7,6 +7,9 @@ export class CreateFoodDto {
   @IsString()
   description: string;
 
+  @IsString()
+  ingredients: string;
+
   @IsNumber()
   fat: number;
 
@@ -18,4 +21,7 @@ export class CreateFoodDto {
 
   @IsNumber()
   protein: number;
+
+  @IsNumber()
+  fiber: number;
 }
