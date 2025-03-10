@@ -2,6 +2,9 @@ import { IsString, IsNumber } from 'class-validator';
 
 export class CreateFoodDto {
   @IsString()
+  id: string;
+
+  @IsString()
   name: string;
 
   @IsString()
