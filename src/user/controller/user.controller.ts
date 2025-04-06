@@ -237,6 +237,21 @@ export class UserController {
       );
     }
   }
+  @Get('profile')
+  @UseGuards(JwtLoginAuthGuard, RoleGuard)
+  @Roles('user')
+  async getUserProfile(@Req() req: any): Promise<ResponseWrapper<any>> {
+    try {
+      const user = await this.userService.getOneUserById(req.user.id);
+      return new ResponseWrapper(HttpStatus.OK, 'User Found', user);
+    } catch (error) {
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status,
+      );
+    }
+  }
+
   @Get('detail/:user_id')
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
   @Roles('user', 'admin')
