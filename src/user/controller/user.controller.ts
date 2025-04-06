@@ -271,7 +271,7 @@ export class UserController {
   }
   @Get('')
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
-  @Roles('user', 'admin')
+  @Roles('admin')
   async getUsers(): Promise<ResponseWrapper<any>> {
     try {
       const user = await this.userService.getAllUser();
