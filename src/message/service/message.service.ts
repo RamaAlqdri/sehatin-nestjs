@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Message } from '../entity/message.entity';
+import { Message, Sender } from '../entity/message.entity';
 import { User } from 'src/user/entity/user.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -27,12 +27,22 @@ export class MessageService {
         throw new Error('User not found');
       }
 
+      // Buat pesan dari user
       const newMessage = this.messageRepository.create({
         ...request,
         user,
       });
 
       await this.messageRepository.save(newMessage);
+
+      // Buat respons otomatis dari bot
+      const botMessage = this.messageRepository.create({
+        content: `Halo, terima kasih atas pesan Anda!`,
+        user, // Tetap terkait dengan user yang sama
+        sender: Sender.BOT, // Tambahkan properti sender untuk menandai pesan dari bot
+      });
+      await this.messageRepository.save(botMessage);
+
       return newMessage;
     } catch (error) {
       throw error;

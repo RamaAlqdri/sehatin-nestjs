@@ -6,6 +6,8 @@ import {
   HttpStatus,
   Param,
   Post,
+  Query,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { MessageService } from '../service/message.service';
@@ -19,18 +21,20 @@ import { CreateMessageDto } from '../dto/create-message.dto';
 export class MessageController {
   constructor(private readonly messageService: MessageService) {}
 
-  @Post(':userId')
+  @Post('')
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
   @Roles('admin', 'user')
   async create(
+    @Req() req: any,
     @Body() createMessage: CreateMessageDto,
-    @Param('userId') userId: string,
+    @Query('userId') userId: string,
   ): Promise<ResponseWrapper<any>> {
     try {
-      await this.messageService.createMessage(userId, createMessage);
+      const id = req.user.role === 'admin' && userId ? userId : req.user.id;
+      await this.messageService.createMessage(id, createMessage);
       return new ResponseWrapper(
         HttpStatus.CREATED,
-        'Message Created Successfully',
+        'Message Sended Successfully',
       );
     } catch (error) {
       throw new HttpException(

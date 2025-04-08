@@ -7,6 +7,8 @@ import {
   Param,
   Post,
   Put,
+  Query,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { ScheduleService } from '../service/schedule.service';
@@ -50,6 +52,7 @@ export class ScheduleController {
   ): Promise<ResponseWrapper<any>> {
     try {
       const schedule = await this.scheduleService.getScheduleById(scheduleId);
+      console.log('Schedule:', schedule);
       return new ResponseWrapper(HttpStatus.OK, 'Schedule Found', schedule);
     } catch (error) {
       throw new HttpException(
@@ -59,14 +62,16 @@ export class ScheduleController {
     }
   }
 
-  @Get('user/:userId')
+  @Get('user')
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
   @Roles('admin', 'user')
   async getScheduleByUserId(
-    @Param('userId') userId: string,
+    @Req() req: any,
+    @Query('userId') userId: string,
   ): Promise<ResponseWrapper<any>> {
     try {
-      const schedule = await this.scheduleService.getScheduleByUserid(userId);
+      const id = req.user.role === 'admin' && userId ? userId : req.user.id;
+      const schedule = await this.scheduleService.getScheduleByUserid(id);
       return new ResponseWrapper(HttpStatus.OK, 'Schedule Found', schedule);
     } catch (error) {
       throw new HttpException(
@@ -97,16 +102,18 @@ export class ScheduleController {
     }
   }
 
-  @Get('day/:userId')
+  @Get('day')
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
   @Roles('admin', 'user')
   async getDailySchedule(
-    @Param('userId') userId: string,
+    @Req() req: any,
+    @Query('userId') userId: string,
     @Body() request: GetScheduleDto,
   ): Promise<ResponseWrapper<any>> {
     try {
+      const id = req.user.role === 'admin' && userId ? userId : req.user.id;
       const schedule = await this.scheduleService.getScheduleForUserByDay(
-        userId,
+        id,
         request.date,
       );
       return new ResponseWrapper(HttpStatus.OK, 'Schedule Found', schedule);
@@ -118,16 +125,18 @@ export class ScheduleController {
     }
   }
 
-  @Get('calories/:userId')
+  @Get('calories')
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
   @Roles('admin', 'user')
   async getCaloriesSchedule(
-    @Param('userId') userId: string,
+    @Req() req: any,
+    @Query('userId') userId: string,
     @Body() request: GetScheduleDto,
   ): Promise<ResponseWrapper<any>> {
     try {
+      const id = req.user.role === 'admin' && userId ? userId : req.user.id;
       const calories = await this.scheduleService.getUserCaloriesConsumedForDay(
-        userId,
+        id,
         request.date,
       );
       return new ResponseWrapper(HttpStatus.OK, 'Calories Fetched', calories);
@@ -138,16 +147,18 @@ export class ScheduleController {
       );
     }
   }
-  @Get('water/:userId')
+  @Get('water')
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
   @Roles('admin', 'user')
   async getWaterSchedule(
+    @Req() req: any,
     @Param('userId') userId: string,
     @Body() request: GetScheduleDto,
   ): Promise<ResponseWrapper<any>> {
     try {
+      const id = req.user.role === 'admin' && userId ? userId : req.user.id;
       const calories = await this.scheduleService.getUserWaterConsumedForDay(
-        userId,
+        id,
         request.date,
       );
       return new ResponseWrapper(HttpStatus.OK, 'Water Fetched', calories);
@@ -158,15 +169,17 @@ export class ScheduleController {
       );
     }
   }
-  @Get('progress/:userId')
+  @Get('progress')
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
   @Roles('admin', 'user')
   async getUserProgress(
-    @Param('userId') userId: string,
+    @Req() req: any,
+    @Query('userId') userId: string,
   ): Promise<ResponseWrapper<any>> {
     try {
+      const id = req.user.role === 'admin' && userId ? userId : req.user.id;
       const calories =
-        await this.scheduleService.getUserCompletedSchedulePercentage(userId);
+        await this.scheduleService.getUserCompletedSchedulePercentage(id);
       return new ResponseWrapper(
         HttpStatus.OK,
         'Diet Progress Fetched',
@@ -180,19 +193,45 @@ export class ScheduleController {
     }
   }
 
-  @Get('month/:userId')
+  @Get('month')
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
   @Roles('admin', 'user')
   async getMonthSchedule(
-    @Param('userId') userId: string,
+    @Req() req: any,
+    @Query('userId') userId: string,
     @Body() request: GetScheduleDto,
   ): Promise<ResponseWrapper<any>> {
     try {
+      const id = req.user.role === 'admin' && userId ? userId : req.user.id;
       const schedule = await this.scheduleService.getScheduleForUserByMonth(
-        userId,
+        id,
         request.date,
       );
       return new ResponseWrapper(HttpStatus.OK, 'Schedule Found', schedule);
+    } catch (error) {
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status,
+      );
+    }
+  }
+
+  @Post('dummy')
+  @UseGuards(JwtLoginAuthGuard, RoleGuard)
+  @Roles('admin', 'user')
+  async createRandomMonthlySchedule(
+    @Req() req: any,
+    @Query('userId') userId: string,
+    @Body('month') month: number,
+    @Body('year') year: number,
+  ): Promise<ResponseWrapper<any>> {
+    try {
+      const id = req.user.role === 'admin' && userId ? userId : req.user.id;
+      await this.scheduleService.createDummySchedule(id, month, year);
+      return new ResponseWrapper(
+        HttpStatus.CREATED,
+        'Dummy Monthly Schedule Created Successfully',
+      );
     } catch (error) {
       throw new HttpException(
         new ResponseWrapper(error.status, error.message),

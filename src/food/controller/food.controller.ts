@@ -7,6 +7,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { FoodService } from '../service/food.service';
@@ -58,6 +59,24 @@ export class FoodController {
     }
   }
 
+  @Get('filter')
+  @UseGuards(JwtLoginAuthGuard, RoleGuard)
+  @Roles('admin', 'user')
+  async filterFoods(
+    @Query('name') name: string = '', // Default to an empty string if name is not provided
+    @Query('limit') limit: number = 5, // Default to 5 if limit is not provided
+  ): Promise<ResponseWrapper<any>> {
+    try {
+      const foods = await this.foodService.filterFoods(name, limit);
+      return new ResponseWrapper(HttpStatus.OK, 'Filtered Foods Found', foods);
+    } catch (error) {
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status,
+      );
+    }
+  }
+
   @Get('')
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
   @Roles('admin', 'user')
@@ -94,7 +113,7 @@ export class FoodController {
     }
   }
 
-  @Get('recommendation')
+  @Get('many')
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
   @Roles('admin', 'user')
   async getFoodByManyIds(

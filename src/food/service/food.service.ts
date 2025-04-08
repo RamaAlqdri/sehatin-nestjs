@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Food } from '../entity/food.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 import { CreateFoodDto } from '../dto/create-food.dto';
 import { UpdateFoodDto } from '../dto/update-food.dto';
 
@@ -51,6 +51,17 @@ export class FoodService {
     try {
       return await this.foodRepository.find({
         where: ids.map((id) => ({ id })),
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async filterFoods(name: string, limit: number): Promise<Food[]> {
+    try {
+      return await this.foodRepository.find({
+        where: name ? { name: Like(`%${name}%`) } : {}, // If name is empty, return all foods
+        take: limit,
       });
     } catch (error) {
       throw error;
