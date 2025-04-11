@@ -88,7 +88,7 @@ export class ScheduleService {
           const randomFood = foods[Math.floor(Math.random() * foods.length)]; // Pilih makanan secara acak
           // const randomCalories =
           //   Math.floor(Math.random() * (500 - 200 + 1)) + 200; // Nilai acak antara 200 dan 500
-          const randomWater = Math.floor(Math.random() * (3 - 1 + 1)) + 1; // Nilai acak antara 1 dan 3 liter
+          const randomWater = Math.floor(Math.random() * (750 - 500 + 1)) + 500; // Nilai acak antara 500 dan 750 mL
 
           const newSchedule = this.scheduleRepository.create({
             user,
@@ -269,7 +269,7 @@ export class ScheduleService {
       const schedules = await this.getScheduleForUserByDay(userId, date);
       // Hitung total target kalori
       const targetWater = schedules.reduce((acc, schedule) => {
-        return acc + parseFloat(schedule.calories_target as any);
+        return acc + parseFloat(schedule.water_target as any);
       }, 0);
       // const completedSchedules = schedules.filter(
       //   (schedule) => schedule.is_completed,
