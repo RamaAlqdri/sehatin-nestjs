@@ -19,6 +19,12 @@ export class Schedule {
   @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
   water_consum: number;
 
+  @Column({ type: 'decimal', precision: 10, scale: 2 })
+  calories_target: number;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+  water_target: number;
+
   @Column({ type: 'timestamp' })
   scheduled_at: Date;
 

@@ -86,6 +86,10 @@ export class ScheduleService {
         // Buat 3 jadwal makan per hari
         for (let i = 0; i < 3; i++) {
           const randomFood = foods[Math.floor(Math.random() * foods.length)]; // Pilih makanan secara acak
+          // const randomCalories =
+          //   Math.floor(Math.random() * (500 - 200 + 1)) + 200; // Nilai acak antara 200 dan 500
+          const randomWater = Math.floor(Math.random() * (3 - 1 + 1)) + 1; // Nilai acak antara 1 dan 3 liter
+
           const newSchedule = this.scheduleRepository.create({
             user,
             food: randomFood,
@@ -94,6 +98,8 @@ export class ScheduleService {
             ), // Tambahkan 6 jam untuk setiap jadwal
             calories_burned: 0,
             water_consum: 0, // Default konsumsi air
+            calories_target: randomFood.calories, // Nilai acak untuk target kalori
+            water_target: randomWater, // Nilai acak untuk target air
             is_completed: false,
           });
           schedules.push(newSchedule);
@@ -226,18 +232,30 @@ export class ScheduleService {
   async getUserCaloriesConsumedForDay(
     userId: string,
     date: Date,
-  ): Promise<number> {
+  ): Promise<{ calories: number; target: number }> {
     try {
       const schedules = await this.getScheduleForUserByDay(userId, date);
+
+      // Hitung total target kalori
+      const targetCalories = schedules.reduce((acc, schedule) => {
+        return acc + parseFloat(schedule.calories_target as any);
+      }, 0);
+
+      // Filter jadwal yang sudah selesai
       const completedSchedules = schedules.filter(
         (schedule) => schedule.is_completed,
       );
-      const calories = completedSchedules.reduce((acc, schedule) => {
+
+      // Hitung total kalori yang dikonsumsi
+      const consumedCalories = completedSchedules.reduce((acc, schedule) => {
         return acc + parseFloat(schedule.calories_burned as any);
       }, 0);
 
-      // console.log('Calories:', calories);
-      return calories;
+      // Kembalikan hasil dalam bentuk objek
+      return {
+        calories: consumedCalories,
+        target: targetCalories,
+      };
     } catch (error) {
       throw new Error(error);
     }
@@ -246,18 +264,24 @@ export class ScheduleService {
   async getUserWaterConsumedForDay(
     userId: string,
     date: Date,
-  ): Promise<number> {
+  ): Promise<{ water: number; target: number }> {
     try {
       const schedules = await this.getScheduleForUserByDay(userId, date);
-      const completedSchedules = schedules.filter(
-        (schedule) => schedule.is_completed,
-      );
-      const water = completedSchedules.reduce((acc, schedule) => {
+      // Hitung total target kalori
+      const targetWater = schedules.reduce((acc, schedule) => {
+        return acc + parseFloat(schedule.calories_target as any);
+      }, 0);
+      // const completedSchedules = schedules.filter(
+      //   (schedule) => schedule.is_completed,
+      // );
+      const water = schedules.reduce((acc, schedule) => {
         return acc + parseFloat(schedule.water_consum as any);
       }, 0);
 
-      // console.log('Water:', water);
-      return water;
+      return {
+        water: water,
+        target: targetWater,
+      };
     } catch (error) {
       throw new Error(error);
     }
