@@ -54,6 +54,9 @@ import { WeightHistory } from './user/entity/weight-history.entity';
                 rejectUnauthorized: false, // Sesuaikan jika perlu
               }
             : false,
+          extra: {
+            options: '-c timezone=Asia/Makassar',
+          },
         };
       },
       inject: [ConfigService],
