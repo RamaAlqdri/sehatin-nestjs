@@ -156,11 +156,14 @@ export class ScheduleService {
       for (let day = 1; day <= daysInMonth; day++) {
         const baseDate = DateTime.fromObject(
           { year, month, day, hour: 0 },
-          { zone },
+          { zone }, // Asia/Makassar
         );
 
         for (let i = 0; i < 3; i++) {
-          const scheduledDate = baseDate.plus({ hours: i * 6 }).toJSDate();
+          const scheduledDate = baseDate
+            .plus({ hours: i * 6 })
+            .toUTC()
+            .toJSDate();
 
           const randomFood = foods[Math.floor(Math.random() * foods.length)];
           const randomWater = Math.floor(Math.random() * (750 - 500 + 1)) + 500;
