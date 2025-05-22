@@ -102,6 +102,7 @@ export class ScheduleService {
     year: number,
   ): Promise<void> {
     try {
+      // Validasi user
       const user = await this.userRepository.findOne({ where: { id: userId } });
       if (!user) {
         throw new HttpException('User not found', HttpStatus.NOT_FOUND);
@@ -120,31 +121,20 @@ export class ScheduleService {
         );
       }
 
-      const zone = 'Asia/Makassar';
+      // Hitung jumlah hari dalam bulan (bulan dimulai dari 1)
+      const daysInMonth = new Date(year, month, 0).getDate();
 
-      // ✅ Perbaikan di sini
-      const daysInMonth = DateTime.fromObject(
-        { year, month },
-        { zone },
-      ).daysInMonth;
-
-      const startOfMonth = DateTime.fromObject(
-        { year, month, day: 1, hour: 0, minute: 0, second: 0 },
-        { zone },
-      ).toJSDate();
-
-      const endOfMonth = DateTime.fromObject(
-        {
-          year,
-          month,
-          day: daysInMonth,
-          hour: 23,
-          minute: 59,
-          second: 59,
-          millisecond: 999,
-        },
-        { zone },
-      ).toJSDate();
+      // Tentukan awal dan akhir bulan untuk penghapusan data lama
+      const startOfMonth = new Date(year, month - 1, 1, 0, 0, 0, 0);
+      const endOfMonth = new Date(
+        year,
+        month - 1,
+        daysInMonth,
+        23,
+        59,
+        59,
+        999,
+      );
 
       await this.scheduleRepository.delete({
         user: { id: userId },
@@ -154,23 +144,9 @@ export class ScheduleService {
       const schedules = [];
 
       for (let day = 1; day <= daysInMonth; day++) {
-        // const baseDate = DateTime.fromObject(
-        //   { year, month, day, hour: 0 },
-        //   { zone }, // Asia/Makassar
-        // );
-
         for (let i = 0; i < 3; i++) {
-          // const scheduledDate = baseDate
-          //   .plus({ hours: i * 6 })
-          //   .toUTC()
-          //   .toJSDate();
-
-          const scheduledDate = DateTime.utc(
-            year,
-            month,
-            day,
-            i * 6 - 8,
-          ).toJSDate();
+          const hour = i * 6; // 00, 06, 12
+          const scheduledDate = new Date(year, month - 1, day, hour);
 
           const randomFood = foods[Math.floor(Math.random() * foods.length)];
           const randomWater = Math.floor(Math.random() * (750 - 500 + 1)) + 500;
@@ -188,6 +164,7 @@ export class ScheduleService {
         }
       }
 
+      // Simpan semua jadwal sekaligus
       await this.scheduleRepository.save(schedules);
     } catch (error) {
       console.error('Error creating dummy schedules:', error);
