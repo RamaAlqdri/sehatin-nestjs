@@ -102,7 +102,6 @@ export class ScheduleService {
     year: number,
   ): Promise<void> {
     try {
-      // Validasi user
       const user = await this.userRepository.findOne({ where: { id: userId } });
       if (!user) {
         throw new HttpException('User not found', HttpStatus.NOT_FOUND);
@@ -110,8 +109,8 @@ export class ScheduleService {
 
       const foods = await this.foodRepository
         .createQueryBuilder('food')
-        .orderBy('RANDOM()') // Gunakan RANDOM() untuk memilih secara acak
-        .limit(100) // Batasi jumlah makanan yang diambil
+        .orderBy('RANDOM()')
+        .limit(100)
         .getMany();
 
       if (foods.length === 0) {
@@ -121,36 +120,31 @@ export class ScheduleService {
         );
       }
 
-      // // Hitung jumlah hari dalam bulan
-      // const daysInMonth = new Date(year, month, 0).getDate();
-
-      // // Hapus jadwal yang sudah ada untuk bulan dan tahun yang sama
-      // const startOfMonth = new Date(year, month - 1, 1, 0, 0, 0, 0);
-      // const endOfMonth = new Date(year, month, 0, 23, 59, 59, 999);
-
       const zone = 'Asia/Makassar';
 
-      // Hitung jumlah hari dalam bulan
-      const daysInMonth = DateTime.local(year, month, 1, { zone }).daysInMonth;
+      // ✅ Perbaikan di sini
+      const daysInMonth = DateTime.fromObject(
+        { year, month },
+        { zone },
+      ).daysInMonth;
 
-      // Hapus jadwal yang sudah ada untuk bulan dan tahun yang sama
-      const startOfMonth = DateTime.fromObject({
-        year,
-        month,
-        day: 1,
-        hour: 0,
-        zone,
-      }).toJSDate();
-      const endOfMonth = DateTime.fromObject({
-        year,
-        month,
-        day: daysInMonth,
-        hour: 23,
-        minute: 59,
-        second: 59,
-        millisecond: 999,
-        zone,
-      }).toJSDate();
+      const startOfMonth = DateTime.fromObject(
+        { year, month, day: 1, hour: 0, minute: 0, second: 0 },
+        { zone },
+      ).toJSDate();
+
+      const endOfMonth = DateTime.fromObject(
+        {
+          year,
+          month,
+          day: daysInMonth,
+          hour: 23,
+          minute: 59,
+          second: 59,
+          millisecond: 999,
+        },
+        { zone },
+      ).toJSDate();
 
       await this.scheduleRepository.delete({
         user: { id: userId },
@@ -160,39 +154,30 @@ export class ScheduleService {
       const schedules = [];
 
       for (let day = 1; day <= daysInMonth; day++) {
-        // Buat tanggal untuk setiap hari dalam UTC
-        // const scheduledDate = new Date(year, month - 1, day);
-        const baseDate = DateTime.fromObject({
-          year,
-          month,
-          day,
-          hour: 6,
-          zone,
-        }); // Mulai dari jam 6 pagi Asia/Makassar
+        const baseDate = DateTime.fromObject(
+          { year, month, day, hour: 6 },
+          { zone },
+        );
 
-        // Buat 3 jadwal makan per hari
         for (let i = 0; i < 3; i++) {
-          const scheduledDate = baseDate.plus({ hours: i * 6 }).toJSDate(); // Tambah 6 jam setiap kali
+          const scheduledDate = baseDate.plus({ hours: i * 6 }).toJSDate();
 
-          const randomFood = foods[Math.floor(Math.random() * foods.length)]; // Pilih makanan secara acak
-          const randomWater = Math.floor(Math.random() * (750 - 500 + 1)) + 500; // Nilai acak antara 500 dan 750 mL
+          const randomFood = foods[Math.floor(Math.random() * foods.length)];
+          const randomWater = Math.floor(Math.random() * (750 - 500 + 1)) + 500;
 
           const newSchedule = this.scheduleRepository.create({
             user,
             food: randomFood,
-            // scheduled_at: new Date(
-            //   scheduledDate.getTime() + i * 6 * 60 * 60 * 1000, // Tambahkan 6 jam untuk setiap jadwal
-            // ),
             scheduled_at: scheduledDate,
-            calories_target: randomFood.calories, // Target kalori dari makanan
-            water_target: randomWater, // Target air dalam mL
+            calories_target: randomFood.calories,
+            water_target: randomWater,
             is_completed: false,
           });
+
           schedules.push(newSchedule);
         }
       }
 
-      // Simpan semua jadwal dalam satu operasi
       await this.scheduleRepository.save(schedules);
     } catch (error) {
       console.error('Error creating dummy schedules:', error);
