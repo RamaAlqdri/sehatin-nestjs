@@ -235,22 +235,23 @@ export class ScheduleService {
     userId: string,
     date: Date,
   ): Promise<Schedule | undefined> {
-    // const utc8Date = new Date(date.getTime() + 8 * 60 * 60 * 1000);
-    // console.log('UTC+8 Date:', utc8Date);
-    console.log('date android:', date);
+    // Kurangi 8 jam dari waktu input (anggap input dari zona Asia/Makassar/UTC+8)
+    const adjustedDate = new Date(date.getTime() - 8 * 60 * 60 * 1000);
+    console.log('Original date (client):', date);
+    console.log('Adjusted date (UTC):', adjustedDate);
 
     try {
       const schedules = await this.scheduleRepository.find({
         where: {
           user: { id: userId },
-          scheduled_at: MoreThanOrEqual(date), // Ambil semua jadwal setelah waktu ini
+          scheduled_at: MoreThanOrEqual(adjustedDate), // Gunakan waktu UTC yang dikoreksi
         },
-        order: { scheduled_at: 'ASC' }, // Urutkan paling awal ke paling akhir
-        take: 1, // Cukup ambil satu jadwal terdekat
-        relations: ['food'], // Muat relasi food
+        order: { scheduled_at: 'ASC' },
+        take: 1,
+        relations: ['food'],
       });
 
-      return schedules[0]; // Bisa undefined kalau tidak ada
+      return schedules[0];
     } catch (error) {
       throw error;
     }
