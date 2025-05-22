@@ -240,6 +240,8 @@ export class ScheduleService {
     console.log('date android:', date);
     const localDate = new Date(date);
 
+    console.log('Local Date:', localDate);
+
     try {
       const schedules = await this.scheduleRepository.find({
         where: {
