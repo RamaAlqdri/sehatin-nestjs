@@ -604,7 +604,6 @@ export class ScheduleService {
     userId: string,
   ): Promise<Schedule> {
     try {
-      // Cari jadwal berdasarkan ID dan pastikan jadwal milik user yang sedang login
       const schedule = await this.scheduleRepository.findOne({
         where: { id: scheduleId, user: { id: userId } },
         relations: ['user', 'food'], // Pastikan relasi user dan food dimuat
