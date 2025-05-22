@@ -29,6 +29,7 @@ import { WeightHistory } from './user/entity/weight-history.entity';
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => {
+        const useSSL = configService.get<string>('DATABASE_SSL') === 'true';
         return {
           type: 'postgres',
           host: configService.get<string>('DATABASE_HOST'),
@@ -47,7 +48,12 @@ import { WeightHistory } from './user/entity/weight-history.entity';
             FoodHistory,
             WeightHistory,
           ],
-          synchronize: true, // Sesuaikan dengan kebutuhan Anda
+          synchronize: true, // nonaktifkan di production
+          ssl: useSSL
+            ? {
+                rejectUnauthorized: false, // Sesuaikan jika perlu
+              }
+            : false,
         };
       },
       inject: [ConfigService],
