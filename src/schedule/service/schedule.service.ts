@@ -155,7 +155,7 @@ export class ScheduleService {
 
       for (let day = 1; day <= daysInMonth; day++) {
         const baseDate = DateTime.fromObject(
-          { year, month, day, hour: 6 },
+          { year, month, day, hour: 0 },
           { zone },
         );
 
