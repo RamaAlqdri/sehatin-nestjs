@@ -6,7 +6,7 @@ import { CreateScheduleDto } from '../dto/create-schedule.dto';
 import { Food } from 'src/food/entity/food.entity';
 import { User } from 'src/user/entity/user.entity';
 import { UpdateScheduleDto } from '../dto/update-schedule.dto';
-
+import { DateTime } from 'luxon';
 import { WaterHistory } from '../entity/water_history.entity';
 import { FoodHistory, MealType } from 'src/food/entity/food_history.entity';
 import { WeightHistory } from 'src/user/entity/weight-history.entity';
@@ -121,12 +121,37 @@ export class ScheduleService {
         );
       }
 
+      // // Hitung jumlah hari dalam bulan
+      // const daysInMonth = new Date(year, month, 0).getDate();
+
+      // // Hapus jadwal yang sudah ada untuk bulan dan tahun yang sama
+      // const startOfMonth = new Date(year, month - 1, 1, 0, 0, 0, 0);
+      // const endOfMonth = new Date(year, month, 0, 23, 59, 59, 999);
+
+      const zone = 'Asia/Makassar';
+
       // Hitung jumlah hari dalam bulan
-      const daysInMonth = new Date(year, month, 0).getDate();
+      const daysInMonth = DateTime.local(year, month, 1, { zone }).daysInMonth;
 
       // Hapus jadwal yang sudah ada untuk bulan dan tahun yang sama
-      const startOfMonth = new Date(year, month - 1, 1, 0, 0, 0, 0);
-      const endOfMonth = new Date(year, month, 0, 23, 59, 59, 999);
+      const startOfMonth = DateTime.fromObject({
+        year,
+        month,
+        day: 1,
+        hour: 0,
+        zone,
+      }).toJSDate();
+      const endOfMonth = DateTime.fromObject({
+        year,
+        month,
+        day: daysInMonth,
+        hour: 23,
+        minute: 59,
+        second: 59,
+        millisecond: 999,
+        zone,
+      }).toJSDate();
+
       await this.scheduleRepository.delete({
         user: { id: userId },
         scheduled_at: Between(startOfMonth, endOfMonth),
@@ -136,19 +161,29 @@ export class ScheduleService {
 
       for (let day = 1; day <= daysInMonth; day++) {
         // Buat tanggal untuk setiap hari dalam UTC
-        const scheduledDate = new Date(year, month - 1, day);
+        // const scheduledDate = new Date(year, month - 1, day);
+        const baseDate = DateTime.fromObject({
+          year,
+          month,
+          day,
+          hour: 6,
+          zone,
+        }); // Mulai dari jam 6 pagi Asia/Makassar
 
         // Buat 3 jadwal makan per hari
         for (let i = 0; i < 3; i++) {
+          const scheduledDate = baseDate.plus({ hours: i * 6 }).toJSDate(); // Tambah 6 jam setiap kali
+
           const randomFood = foods[Math.floor(Math.random() * foods.length)]; // Pilih makanan secara acak
           const randomWater = Math.floor(Math.random() * (750 - 500 + 1)) + 500; // Nilai acak antara 500 dan 750 mL
 
           const newSchedule = this.scheduleRepository.create({
             user,
             food: randomFood,
-            scheduled_at: new Date(
-              scheduledDate.getTime() + i * 6 * 60 * 60 * 1000, // Tambahkan 6 jam untuk setiap jadwal
-            ),
+            // scheduled_at: new Date(
+            //   scheduledDate.getTime() + i * 6 * 60 * 60 * 1000, // Tambahkan 6 jam untuk setiap jadwal
+            // ),
+            scheduled_at: scheduledDate,
             calories_target: randomFood.calories, // Target kalori dari makanan
             water_target: randomWater, // Target air dalam mL
             is_completed: false,
