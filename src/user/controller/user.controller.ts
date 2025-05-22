@@ -64,6 +64,31 @@ export class UserController {
     }
   }
 
+  @Post('password/change')
+  @UseGuards(JwtLoginAuthGuard, RoleGuard)
+  @Roles('user')
+  async changePassword(
+    @Req() req: any,
+    @Body() body: { old_password: string; new_password: string },
+  ): Promise<ResponseWrapper<any>> {
+    try {
+      await this.userService.changePassword(
+        req.user.id,
+        body.old_password,
+        body.new_password,
+      );
+      return new ResponseWrapper(
+        HttpStatus.CREATED,
+        'Password Change Successful',
+      );
+    } catch (error) {
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status,
+      );
+    }
+  }
+
   @Put('name')
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
   @Roles('user', 'admin')
@@ -102,7 +127,7 @@ export class UserController {
       );
     }
   }
-  @Put('weight')
+  @Post('weight')
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
   @Roles('user', 'admin')
   async updateUserWeight(
@@ -114,6 +139,44 @@ export class UserController {
       const id = req.user.role === 'admin' && userId ? userId : req.user.id;
       await this.userService.updateUserWeight(id, body.weight);
       return new ResponseWrapper(HttpStatus.OK, 'Weight Updated Successful');
+    } catch (error) {
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status,
+      );
+    }
+  }
+
+  @Get('weight')
+  @UseGuards(JwtLoginAuthGuard, RoleGuard)
+  @Roles('user', 'admin')
+  async getUserWeight(
+    @Req() req: any,
+    @Query('user_id') userId: string,
+  ): Promise<ResponseWrapper<any>> {
+    try {
+      const id = req.user.role === 'admin' && userId ? userId : req.user.id;
+      const weight = await this.userService.getCurrentWeight(id);
+      return new ResponseWrapper(HttpStatus.OK, 'Weight Found', weight);
+    } catch (error) {
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status,
+      );
+    }
+  }
+
+  @Get('weight/history')
+  @UseGuards(JwtLoginAuthGuard, RoleGuard)
+  @Roles('user', 'admin')
+  async getUserWeightHistory(
+    @Req() req: any,
+    @Query('user_id') userId: string,
+  ): Promise<ResponseWrapper<any>> {
+    try {
+      const id = req.user.role === 'admin' && userId ? userId : req.user.id;
+      const weight = await this.userService.getWeightHistory(id);
+      return new ResponseWrapper(HttpStatus.OK, 'Weight Found', weight);
     } catch (error) {
       throw new HttpException(
         new ResponseWrapper(error.status, error.message),

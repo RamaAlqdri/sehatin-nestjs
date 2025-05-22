@@ -1,5 +1,5 @@
 import { Transform } from 'class-transformer';
-import { IsNumber, IsUUID, IsDate } from 'class-validator';
+import { IsUUID, IsDate } from 'class-validator';
 
 export class CreateScheduleDto {
   @IsUUID()
@@ -8,8 +8,8 @@ export class CreateScheduleDto {
   @IsUUID()
   food_id: string;
 
-  @IsNumber()
-  calories_burned: number;
+  // @IsNumber()
+  // calories_burned: number;
 
   @IsDate()
   @Transform(({ value }) => new Date(value))

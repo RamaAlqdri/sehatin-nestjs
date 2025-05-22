@@ -17,6 +17,9 @@ import { Admin } from './admin/entity/admin.entity';
 import { Food } from './food/entity/food.entity';
 import { Schedule } from './schedule/entity/schedule.entity';
 import { Message } from './message/entity/message.entity';
+import { WaterHistory } from './schedule/entity/water_history.entity';
+import { FoodHistory } from './food/entity/food_history.entity';
+import { WeightHistory } from './user/entity/weight-history.entity';
 
 @Module({
   imports: [
@@ -33,7 +36,17 @@ import { Message } from './message/entity/message.entity';
           username: configService.get<string>('DATABASE_USERNAME'),
           password: configService.get<string>('DATABASE_PASSWORD'),
           database: configService.get<string>('DATABASE_NAME'),
-          entities: [User, Otp, Admin, Food, Schedule, Message],
+          entities: [
+            User,
+            Otp,
+            Admin,
+            Food,
+            Schedule,
+            Message,
+            WaterHistory,
+            FoodHistory,
+            WeightHistory,
+          ],
           synchronize: true, // Sesuaikan dengan kebutuhan Anda
         };
       },

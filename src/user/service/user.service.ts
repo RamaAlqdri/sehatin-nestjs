@@ -11,12 +11,26 @@ import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
 import { Activity, Gender, Goal, User } from '../entity/user.entity';
 import { RegisterUserDto } from '../dto/register-user.dto';
+import { ScheduleService } from 'src/schedule/service/schedule.service';
+import { Schedule } from 'src/schedule/entity/schedule.entity';
+import { Food } from 'src/food/entity/food.entity';
+import { WeightHistory } from '../entity/weight-history.entity';
 
 @Injectable()
 export class UserService {
   constructor(
     @Inject('JwtLoginService') private jwtLoginService: JwtService,
     @InjectRepository(User) private readonly userRepository: Repository<User>,
+    @InjectRepository(Schedule)
+    private readonly scheduleRepository: Repository<Schedule>,
+
+    @InjectRepository(Food)
+    private readonly foodRepository: Repository<Food>,
+
+    @InjectRepository(WeightHistory)
+    private readonly weightHistoryRepository: Repository<WeightHistory>,
+
+    private scheduleService: ScheduleService,
   ) {}
 
   async createUser(request: RegisterUserDto): Promise<User> {
@@ -27,6 +41,15 @@ export class UserService {
         password: await bcrypt.hash(request.password, 10),
       });
       const savedUser = await this.userRepository.save(user);
+
+      // Gunakan tanggal saat ini untuk membuat jadwal dummy
+      const currentDate = new Date(); // Ambil tanggal saat ini
+      await this.scheduleService.createDummySchedule(
+        savedUser.id,
+        currentDate.getMonth() + 1,
+        currentDate.getFullYear(),
+      );
+
       return savedUser;
     } catch (error) {
       console.log('error', error.message);
@@ -34,6 +57,40 @@ export class UserService {
         throw error;
       }
       throw new Error(error);
+    }
+  }
+
+  async changePassword(
+    userId: string,
+    oldPassword: string,
+    newPassword: string,
+  ): Promise<User> {
+    try {
+      // Cari user berdasarkan ID
+      const user = await this.userRepository.findOneBy({ id: userId });
+      if (!user) {
+        throw new UnauthorizedException('User not Found');
+      }
+
+      // Verifikasi kata sandi lama
+      const isPasswordValid = await bcrypt.compare(oldPassword, user.password);
+      if (!isPasswordValid) {
+        throw new UnauthorizedException('Old password is incorrect');
+      }
+
+      // Hash kata sandi baru
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      user.password = hashedPassword;
+
+      // Simpan perubahan
+      await this.userRepository.save(user);
+
+      // Hapus kata sandi dari respons untuk keamanan
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { password, ...result } = user;
+      return result as User;
+    } catch (error) {
+      throw new InternalServerErrorException(error);
     }
   }
 
@@ -91,18 +148,60 @@ export class UserService {
   }
   async updateUserWeight(userId: string, weight: number): Promise<User> {
     try {
+      // Cari user berdasarkan ID
       const user = await this.userRepository.findOneBy({ id: userId });
       if (!user) {
         throw new UnauthorizedException('User not Found');
       }
-      user.weight = weight;
-      await this.userRepository.save(user);
-      //   console.log('User:', user);
+
+      // Simpan riwayat berat badan ke weightHistoryRepository
+      const weightHistory = this.weightHistoryRepository.create({
+        user,
+        weight,
+      });
+      await this.weightHistoryRepository.save(weightHistory);
+
       return user;
     } catch (error) {
       throw new InternalServerErrorException(error);
     }
   }
+
+  async getCurrentWeight(userId: string): Promise<WeightHistory> {
+    try {
+      const user = await this.userRepository.findOneBy({ id: userId });
+      if (!user) {
+        throw new UnauthorizedException('User not Found');
+      }
+      const currentWeight = await this.weightHistoryRepository.findOne({
+        where: { user: { id: userId } },
+        order: { createdAt: 'DESC' },
+      });
+      // if (!currentWeight) {
+      //   return 0;
+      // }
+      // return currentWeight;
+      return currentWeight || null;
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
+  }
+  async getWeightHistory(userId: string): Promise<WeightHistory[]> {
+    try {
+      const weightHistory = await this.weightHistoryRepository.find({
+        where: { user: { id: userId } },
+        order: { createdAt: 'DESC' },
+        take: 5,
+      });
+      if (!weightHistory) {
+        throw new UnauthorizedException('Weight not Found');
+      }
+      return weightHistory.reverse();
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
+  }
+
   async updateUserBMI(userId: string, bmi: number): Promise<User> {
     try {
       const user = await this.userRepository.findOneBy({ id: userId });
@@ -189,13 +288,21 @@ export class UserService {
     }
   }
 
-  async getOneUserById(userId: string): Promise<User> {
+  async getOneUserById(userId: string): Promise<any> {
     try {
       const user = await this.userRepository.findOneBy({ id: userId });
       if (!user) {
         throw new UnauthorizedException('User not Found');
       }
-      return user;
+      console.log('User:', user);
+      // Ambil berat badan terbaru pengguna
+      const currentWeight = await this.getCurrentWeight(userId);
+      // if(!currentWeight) {
+
+      // Gabungkan data user dengan berat badan terbaru
+      return { ...user, weight: currentWeight?.weight || null };
+
+      // return user;
     } catch (error) {
       throw new InternalServerErrorException(error);
     }

@@ -4,7 +4,6 @@ import {
   Get,
   HttpException,
   HttpStatus,
-  Param,
   Post,
   Query,
   Req,
@@ -31,7 +30,7 @@ export class MessageController {
   ): Promise<ResponseWrapper<any>> {
     try {
       const id = req.user.role === 'admin' && userId ? userId : req.user.id;
-      await this.messageService.createMessage(id, createMessage);
+      await this.messageService.generateMessage(id, createMessage);
       return new ResponseWrapper(
         HttpStatus.CREATED,
         'Message Sended Successfully',
@@ -44,14 +43,16 @@ export class MessageController {
     }
   }
 
-  @Get('user/:userId')
+  @Get('user')
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
   @Roles('admin', 'user')
   async getMessagesByUserId(
-    @Param('userId') userId: string,
+    @Req() req: any,
+    @Query('userId') userId: string,
   ): Promise<ResponseWrapper<any>> {
     try {
-      const messages = await this.messageService.getAllMessageByUserId(userId);
+      const id = req.user.role === 'admin' && userId ? userId : req.user.id;
+      const messages = await this.messageService.getAllMessageByUserId(id);
       return new ResponseWrapper(HttpStatus.OK, 'Messages Found', messages);
     } catch (error) {
       throw new HttpException(

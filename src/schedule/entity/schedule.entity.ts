@@ -13,11 +13,11 @@ export class Schedule {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2 })
-  calories_burned: number;
+  // @Column({ type: 'decimal', precision: 10, scale: 2 })
+  // calories_burned: number;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
-  water_consum: number;
+  // @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+  // water_consum: number;
 
   @Column({ type: 'decimal', precision: 10, scale: 2 })
   calories_target: number;

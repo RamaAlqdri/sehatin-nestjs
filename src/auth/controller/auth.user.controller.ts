@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   HttpException,
   HttpStatus,
   Inject,
@@ -36,6 +37,22 @@ export class AuthUserController {
       );
     }
   }
+
+  // @Get('google/login')
+  // @UseGuards(GoogleAuthGuard)
+  // handleLogin() {
+  //   return { msg: 'Google Authentication' };
+  // }
+  // @Get('google/redirect')
+  // @UseGuards(GoogleAuthGuard)
+  // async handleRedirect(@Req() req): Promise<ResponseWrapper<any>> {
+  //   // After successful authentication, Google redirects to this route
+  //   const access_token = req.user;
+  //   return new ResponseWrapper(HttpStatus.OK, 'Login Successful', {
+  //     access_token,
+  //   });
+  // }
+
   @Post('otp/verify')
   async verifyOtp(
     @Body() body: { otp_code: string; email: string },
@@ -60,6 +77,7 @@ export class AuthUserController {
   }
   @Post('otp/generate')
   async regenerateOtp(@Body() body: { email: string }) {
+    console.log('body', body);
     try {
       const otp = await this.otpService.generateOtp(body.email);
       if (otp) {
