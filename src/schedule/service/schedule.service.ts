@@ -147,7 +147,7 @@ export class ScheduleService {
             user,
             food: randomFood,
             scheduled_at: new Date(
-              scheduledDate.getTime() + i * 14 * 60 * 60 * 1000, // Tambahkan 6 jam untuk setiap jadwal
+              scheduledDate.getTime() + i, // Tambahkan 6 jam untuk setiap jadwal
             ),
             calories_target: randomFood.calories, // Target kalori dari makanan
             water_target: randomWater, // Target air dalam mL
