@@ -122,12 +122,11 @@ export class ScheduleService {
       }
 
       // Hitung jumlah hari dalam bulan
-      // Hitung jumlah hari dalam bulan
-      const daysInMonth = new Date(year, month, 0).getDate();
+      const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
 
       // Hapus jadwal yang sudah ada untuk bulan dan tahun yang sama
-      const startOfMonth = new Date(year, month - 1, 1, 0, 0, 0, 0); // Asia/Makassar (lokal)
-      const endOfMonth = new Date(year, month, 0, 23, 59, 59, 999); // Asia/Makassar (lokal)
+      const startOfMonth = new Date(Date.UTC(year, month - 1, 1, 0, 0, 0, 0));
+      const endOfMonth = new Date(Date.UTC(year, month, 0, 23, 59, 59, 999));
       await this.scheduleRepository.delete({
         user: { id: userId },
         scheduled_at: Between(startOfMonth, endOfMonth),
