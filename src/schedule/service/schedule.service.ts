@@ -122,11 +122,11 @@ export class ScheduleService {
       }
 
       // Hitung jumlah hari dalam bulan
-      const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
+      const daysInMonth = new Date(year, month, 0).getDate();
 
       // Hapus jadwal yang sudah ada untuk bulan dan tahun yang sama
-      const startOfMonth = new Date(Date.UTC(year, month - 1, 1, 0, 0, 0, 0));
-      const endOfMonth = new Date(Date.UTC(year, month, 0, 23, 59, 59, 999));
+      const startOfMonth = new Date(year, month - 1, 1, 0, 0, 0, 0);
+      const endOfMonth = new Date(year, month, 0, 23, 59, 59, 999);
       await this.scheduleRepository.delete({
         user: { id: userId },
         scheduled_at: Between(startOfMonth, endOfMonth),
@@ -136,7 +136,7 @@ export class ScheduleService {
 
       for (let day = 1; day <= daysInMonth; day++) {
         // Buat tanggal untuk setiap hari dalam UTC
-        const scheduledDate = new Date(Date.UTC(year, month - 1, day));
+        const scheduledDate = new Date(year, month - 1, day);
 
         // Buat 3 jadwal makan per hari
         for (let i = 0; i < 3; i++) {
@@ -147,7 +147,7 @@ export class ScheduleService {
             user,
             food: randomFood,
             scheduled_at: new Date(
-              scheduledDate.getTime() + i * 16 * 60 * 60 * 1000, // Tambahkan 6 jam untuk setiap jadwal
+              scheduledDate.getTime() + i * 6 * 60 * 60 * 1000, // Tambahkan 6 jam untuk setiap jadwal
             ),
             calories_target: randomFood.calories, // Target kalori dari makanan
             water_target: randomWater, // Target air dalam mL
